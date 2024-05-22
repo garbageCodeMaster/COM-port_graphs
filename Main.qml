@@ -1,4 +1,8 @@
-// main.qml https://youtu.be/Kq0pX3Vhq0c?feature=shared https://forum.qt.io/topic/129576/custom-qml-chart-realtime-data/3
+// main.qml
+// https://youtu.be/Kq0pX3Vhq0c?feature=shared
+// https://forum.qt.io/topic/129576/custom-qml-chart-realtime-data/3
+// https://github.com/Furkanzmc/QML-Coding-Guide
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtCharts 2.3
@@ -14,20 +18,9 @@ ApplicationWindow {
         id: serialPortReader
 
         onLineSeriesChanged: {
-            // lineSeries2.clear(); // Очистить старые точки
-
-            const length = serialPortReader.lineSeries.count
-
-            var point = serialPortReader.lineSeries.at(length-1);
-            // console.log(point.x, point.y);
-            lineSeries2.append(point.x, point.y); // Добавить новые точки
-
-
-
-            if (length === 100) {
-                axisx.max = lineSeries.at(length - 1).x;
-                axisx.min = lineSeries.at(0).x;
-            }
+            // console.log(serialPortReader.lineSeries);
+            serialPortReader.update(chartView.series(0));
+            // dataSource.update(chartView.series(1));
         }
     }
 
@@ -43,11 +36,11 @@ ApplicationWindow {
             // useOpenGL: true
             ValueAxis {
                 id: axisy
-                min: -200
+                min: 0
                 max: 200
                 gridVisible: true
                 tickCount: 7
-                titleText: "Value"
+                titleText: "Power"
                 titleFont.bold: true
                 titleFont.italic: true
                 titleFont.pointSize: 10
@@ -57,17 +50,18 @@ ApplicationWindow {
                 id: axisx
                 gridVisible: true
                 // format: "hh:mm:ss"
-                tickCount: 10
-                titleText: "Time"
+                tickCount: 11
+                titleText: "Mhz"
                 titleFont.bold: true
                 titleFont.italic: true
                 titleFont.pointSize: 10
-                max: 10
+                max: 10000
                 min: 0
             }
 
             axisX: axisx
             axisY: axisy
+
         }
     }
 

@@ -10,19 +10,17 @@
 class SerialPortReader : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString data READ data NOTIFY dataChanged)
-    Q_PROPERTY(QLineSeries* lineSeries READ lineSeries NOTIFY lineSeriesChanged)
+    Q_PROPERTY(QList<QPointF> m_data NOTIFY lineSeriesChanged)
 
 public:
     explicit SerialPortReader(QObject *parent = nullptr);
     ~SerialPortReader();
 
-    QString data() const;
-    QLineSeries* lineSeries() const;
 
 public slots:
     void openSerialPort(const QString &portName);
     void closeSerialPort();
+    void update(QAbstractSeries *series);
     Q_INVOKABLE QStringList availablePorts() const;
 
 signals:
@@ -34,8 +32,7 @@ private slots:
 
 private:
     QSerialPort *m_serialPort;
-    QString m_data;
-    QLineSeries *m_lineSeries;
+    QList<QPointF> m_data;
 };
 
 #endif

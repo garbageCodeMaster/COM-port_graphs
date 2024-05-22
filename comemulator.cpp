@@ -18,17 +18,24 @@ COMemulator::COMemulator(QObject *parent) : QObject(parent) {
 
     // Timer to emulate data reception
     connect(&timer, &QTimer::timeout, this, &COMemulator::emitFakeData);
-    timer.start(100); // Emulate data every second
+    timer.start(1000); // Emulate data every second
 
     // Read data from the serial port
     // connect(&serialPort, &QSerialPort::readyRead, this, &COMemulator::readData);
 }
 
 void COMemulator::emitFakeData() {
-    // Generate random floating-point number between -100 and 100
-    qreal randomValue = QRandomGenerator::global()->generateDouble() * 200.0 - 100.0;
+    QByteArray fakeData;
 
-    QByteArray fakeData = QByteArray::number(randomValue, 'g', 4) + "\n";
+    for (int i = 1000; i < 5000; ++i) {
+        // Generate random floating-point number between 0 and 200
+        qreal randomValue = QRandomGenerator::global()->generateDouble() * 200.0;
+
+        // Append the generated value to the fake data, formatted to 4 significant digits
+        fakeData += QByteArray::number(randomValue, 'g', 4) + '\n';
+    }
+
+    // Write the accumulated fake data to the serial port
     serialPort.write(fakeData);
 }
 
