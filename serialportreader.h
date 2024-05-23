@@ -5,7 +5,11 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QStringList>
-#include <QLineSeries>
+#include <QElapsedTimer>
+#include <QPointF>
+
+QT_FORWARD_DECLARE_CLASS(QAbstractSeries)
+QT_FORWARD_DECLARE_CLASS(QXYSeries)
 
 class SerialPortReader : public QObject
 {
@@ -26,6 +30,7 @@ public slots:
 signals:
     void dataChanged();
     void lineSeriesChanged();
+    void fpsChanged(const QString &fps);
 
 private slots:
     void readData();
@@ -33,6 +38,8 @@ private slots:
 private:
     QSerialPort *m_serialPort;
     QList<QPointF> m_data;
+    QElapsedTimer m_fpsTimer;
+    QString m_fpsLabel;
 };
 
 #endif

@@ -1,15 +1,18 @@
 #include "serialportreader.h"
+
 #include <QSerialPortInfo>
 #include <QDebug>
 #include <QDateTime>
 #include <QXYSeries>
 
-Q_DECLARE_METATYPE(QAbstractSeries *)
 
-SerialPortReader::SerialPortReader(QObject *parent) : QObject(parent), m_serialPort(new QSerialPort(this))
+SerialPortReader::SerialPortReader(QObject *parent) :
+    QObject(parent),
+    m_serialPort(new QSerialPort(this)),
+    m_fpsTimer()
 {
     connect(m_serialPort, &QSerialPort::readyRead, this, &SerialPortReader::readData);
-    qRegisterMetaType<QAbstractSeries*>();
+    m_fpsTimer.start();
 }
 
 SerialPortReader::~SerialPortReader()
@@ -52,6 +55,18 @@ void SerialPortReader::update(QAbstractSeries *series)
         // Use replace instead of clear + append, it's optimized for performance
         xySeries->replace(points);
     }
+
+    static int frameCount = 0;
+    static QString labelText = QStringLiteral("FPS: %1");
+
+    frameCount++;
+    int elapsed = m_fpsTimer.elapsed();
+    if (elapsed >= 1000) {
+        elapsed = m_fpsTimer.restart();
+        qreal fps = qreal(0.1 * int(10000.0 * (qreal(frameCount) / qreal(elapsed))));
+        emit fpsChanged(labelText.arg(QString::number(fps, 'f', 1)));
+        frameCount = 0;
+    }
 }
 
 void SerialPortReader::readData()
@@ -63,19 +78,17 @@ void SerialPortReader::readData()
 
     int i = 1000;
     if (m_serialPort->canReadLine()) {
-        while (m_serialPort->canReadLine()) {
+        while (m_serialPort->canReadLine() && i <= 5000) {
             line = m_serialPort->readLine().trimmed();
 
             points.append(QPointF(i, line.toFloat()));
 
             i++;
-
-            if (i > 5000) {
-                m_data = points;
-                qDebug() << "jopa";
-                emit lineSeriesChanged();
-            }
         }
+
+        m_data = points;
+        qDebug() << "jopa";
+        emit lineSeriesChanged();
 
     }
 

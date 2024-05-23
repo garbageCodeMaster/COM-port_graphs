@@ -1,86 +1,53 @@
-// main.qml
-// https://youtu.be/Kq0pX3Vhq0c?feature=shared
-// https://forum.qt.io/topic/129576/custom-qml-chart-realtime-data/3
-// https://github.com/Furkanzmc/QML-Coding-Guide
-
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtCharts 2.3
-import SerialPortReader 1.0
+import QtDataVisualization 1.2
 
 ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    title: qsTr("COM Port Reader")
 
-    SerialPortReader {
-        id: serialPortReader
-
-        onLineSeriesChanged: {
-            // console.log(serialPortReader.lineSeries);
-            serialPortReader.update(chartView.series(0));
-            // dataSource.update(chartView.series(1));
-        }
-    }
-
-    ChartView {
-        id: chartView
+    Surface3D {
+        id: graph
         width: parent.width
-        height: parent.height - 50
-        antialiasing: true
+        height: parent.height
 
-        LineSeries {
-            id: lineSeries2
-            name: "COM Data"
-            // useOpenGL: true
-            ValueAxis {
-                id: axisy
-                min: 0
-                max: 200
-                gridVisible: true
-                tickCount: 7
-                titleText: "Power"
-                titleFont.bold: true
-                titleFont.italic: true
-                titleFont.pointSize: 10
-                }
-
-            ValueAxis {
-                id: axisx
-                gridVisible: true
-                // format: "hh:mm:ss"
-                tickCount: 11
-                titleText: "Mhz"
-                titleFont.bold: true
-                titleFont.italic: true
-                titleFont.pointSize: 10
-                max: 10000
-                min: 0
+        axes: [
+            ValueAxis3D {
+                minValue: 0
+                maxValue: 10
+                title: "Frequency (MHz)"
+            },
+            ValueAxis3D {
+                minValue: 0
+                maxValue: 10
+                title: "Time"
+            },
+            ValueAxis3D {
+                minValue: -1
+                maxValue: 1
+                title: "Amplitude"
             }
+        ]
 
-            axisX: axisx
-            axisY: axisy
+        surfaceSeriesList: [
+            Surface3DSeries {
+                mesh: Surface3DSeries.MeshSurface
+                dataProxy: ItemModelSurfaceDataProxy {
+                    itemLabelFormat: "Amplitude @ (Frequency, Time): %1"
+                    rowCount: 100
+                    columnCount: 100
 
-        }
+                    // Here you would fill in your data
+                    // In a real application, you would likely load this data from a file or generate it dynamically
+                    itemArray: ListModel {
+                        ListElement { value: Math.sin(0) }
+                        ListElement { value: Math.sin(0.1) }
+                        ListElement { value: Math.sin(0.2) }
+                        // ... (add more data points as needed)
+                    }
+                }
+            }
+        ]
     }
-
-
-    ComboBox {
-        id: portSelector
-        width: parent.width
-        model: serialPortReader.availablePorts()
-
-        onActivated: {
-            serialPortReader.closeSerialPort()
-            serialPortReader.openSerialPort(portSelector.currentText)
-        }
-    }
-
-    // Component.onCompleted: {
-    //     console.log("Starting to read from COM port");
-    //     if (portSelector.count > 0) {
-    //         serialPortReader.readData(portSelector.currentText)
-    //     }
-    // }
 }

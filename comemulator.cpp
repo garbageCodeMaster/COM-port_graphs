@@ -1,4 +1,8 @@
 #include "COMemulator.h"
+
+#include <algorithm>
+#include <random>
+#include <math.h>
 #include <QCoreApplication>
 
 COMemulator::COMemulator(QObject *parent) : QObject(parent) {
@@ -16,9 +20,21 @@ COMemulator::COMemulator(QObject *parent) : QObject(parent) {
         return;
     }
 
+
+
+
+    for (int i = 1000; i < 5000; ++i) {
+        indices.append(i);
+    }
+    // Перемешивание индексов
+    //std::shuffle(indices.begin(), indices.end(), std::mt19937{std::random_device{}()});
+
+
+
+
     // Timer to emulate data reception
     connect(&timer, &QTimer::timeout, this, &COMemulator::emitFakeData);
-    timer.start(1000); // Emulate data every second
+    timer.start(100); // Emulate data every second
 
     // Read data from the serial port
     // connect(&serialPort, &QSerialPort::readyRead, this, &COMemulator::readData);
@@ -27,15 +43,16 @@ COMemulator::COMemulator(QObject *parent) : QObject(parent) {
 void COMemulator::emitFakeData() {
     QByteArray fakeData;
 
-    for (int i = 1000; i < 5000; ++i) {
-        // Generate random floating-point number between 0 and 200
-        qreal randomValue = QRandomGenerator::global()->generateDouble() * 200.0;
+    for (int i = 0; i < indices.size(); ++i) {
+        qreal u1 = QRandomGenerator::global()->generateDouble(); // Случайное число от 0 до 1
 
-        // Append the generated value to the fake data, formatted to 4 significant digits
+        double coefficient = 1 / (std::sqrt(2 * M_PI) * 15);
+        double exponent = std::exp(-0.5 * std::pow((float(i - 2000)/30) / 15, 2));
+
+        double w = coefficient * exponent;
+        qreal randomValue = 500.0 * w + (u1 > 0.7 ? u1*3: u1*2); // Преобразование в значение с нужным средним и стандартным отклонением
         fakeData += QByteArray::number(randomValue, 'g', 4) + '\n';
     }
 
-    // Write the accumulated fake data to the serial port
     serialPort.write(fakeData);
 }
-

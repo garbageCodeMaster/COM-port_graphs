@@ -20,6 +20,7 @@ private slots:
 private:
     QSerialPort serialPort;
     QTimer timer;
+    QVector<int> indices;
 };
 
 #endif
